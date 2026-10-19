@@ -3,6 +3,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { useApp } from '../context/AppContext';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +17,29 @@ export const Dashboard: React.FC = () => {
     completedRuns: 0,
     accuracyImprovement: 0,
   });
+
+  // Chart data
+  const [performanceData] = useState([
+    { name: 'Run 1', baseline: 0.82, verified: 0.85, improvement: 3 },
+    { name: 'Run 2', baseline: 0.78, verified: 0.84, improvement: 6 },
+    { name: 'Run 3', baseline: 0.80, verified: 0.87, improvement: 7 },
+    { name: 'Run 4', baseline: 0.85, verified: 0.89, improvement: 4 },
+    { name: 'Run 5', baseline: 0.88, verified: 0.91, improvement: 3 },
+  ]);
+
+  const [modelAccuracyData] = useState([
+    { name: 'RandomForest', value: 0.89, color: '#3b82f6' },
+    { name: 'LogisticRegression', value: 0.82, color: '#8b5cf6' },
+    { name: 'SVM', value: 0.85, color: '#ec4899' },
+    { name: 'KNN', value: 0.78, color: '#f59e0b' },
+  ]);
+
+  const [verificationMetrics] = useState([
+    { metric: 'Schema Integrity', passed: 95, failed: 5 },
+    { metric: 'Data Splitting', passed: 98, failed: 2 },
+    { metric: 'Metric Correctness', passed: 92, failed: 8 },
+    { metric: 'Reproducibility', passed: 90, failed: 10 },
+  ]);
 
   useEffect(() => {
     loadDashboardData();
@@ -152,6 +179,137 @@ export const Dashboard: React.FC = () => {
             <p className="text-3xl font-bold">{card.value}</p>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* Charts Section */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12"
+      >
+        {/* Performance Improvement Chart */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 backdrop-blur-sm"
+        >
+          <h3 className="text-xl font-bold text-white mb-6">Performance Comparison</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={performanceData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis stroke="#9ca3af" />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1f2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#f3f4f6',
+                }}
+              />
+              <Legend />
+              <Line type="monotone" dataKey="baseline" stroke="#ef4444" strokeWidth={2} name="Baseline" />
+              <Line type="monotone" dataKey="verified" stroke="#10b981" strokeWidth={2} name="Verified" />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Model Accuracy Distribution */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 backdrop-blur-sm"
+        >
+          <h3 className="text-xl font-bold text-white mb-6">Model Accuracy Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={modelAccuracyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis stroke="#9ca3af" dataKey="name" />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1f2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#f3f4f6',
+                }}
+              />
+              <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]}>
+                {modelAccuracyData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Verification Metrics */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 backdrop-blur-sm"
+        >
+          <h3 className="text-xl font-bold text-white mb-6">Verification Pass Rates</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={verificationMetrics} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis type="number" stroke="#9ca3af" />
+              <YAxis dataKey="metric" type="category" stroke="#9ca3af" width={120} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1f2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#f3f4f6',
+                }}
+              />
+              <Bar dataKey="passed" fill="#10b981" stackId="a" />
+              <Bar dataKey="failed" fill="#ef4444" stackId="a" />
+            </BarChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Improvement Distribution */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-gray-800/50 border border-gray-700 rounded-xl p-8 backdrop-blur-sm"
+        >
+          <h3 className="text-xl font-bold text-white mb-6">Accuracy Improvement Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={[
+                  { name: '0-2%', value: 15, color: '#f3f4f6' },
+                  { name: '2-4%', value: 35, color: '#3b82f6' },
+                  { name: '4-6%', value: 30, color: '#10b981' },
+                  { name: '6%+', value: 20, color: '#fbbf24' },
+                ]}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, value }) => `${name}: ${value}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {[
+                  { color: '#f3f4f6' },
+                  { color: '#3b82f6' },
+                  { color: '#10b981' },
+                  { color: '#fbbf24' },
+                ].map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1f2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#f3f4f6',
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </motion.div>
       </motion.div>
 
       {/* Action Buttons */}
